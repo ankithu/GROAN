@@ -13,7 +13,7 @@ Run `source env/bin/activate` to activate it
 
 Then run `pip install -r requirements.txt` to get all required dependencies in the env
 
-##N ow generate your preliminary csv file
+## Now generate your preliminary csv file
 
 Go into process.py and scroll to the bottom.
 There are two variables, mbox_path and csv_path. mbox_path is the path to your
