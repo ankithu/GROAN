@@ -1,0 +1,5 @@
+Mail/*
+env/*
+.DS_STORE
+mail.csv
+test_out.csv
