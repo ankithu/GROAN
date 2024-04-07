@@ -1,11 +1,11 @@
-#How to generate training data
+# How to generate training data
 
-##Get email data
+## Get email data
 
 first, create an mbox file with just your gmail data (lookup how to do this online) you should now have a file 'mail.mbox somehwere'. Put
 it in this repo somewhere
 
-##Setup env
+## Setup env
 
 Run `python -m venv env` to create your virtual env
 
@@ -13,7 +13,7 @@ Run `source env/bin/activate` to activate it
 
 Then run `pip install -r requirements.txt` to get all required dependencies in the env
 
-##Now generate your preliminary csv file
+##N ow generate your preliminary csv file
 
 Go into process.py and scroll to the bottom.
 There are two variables, mbox_path and csv_path. mbox_path is the path to your
@@ -24,7 +24,7 @@ TODO change these to program args.
 Run:
 `python3 process.py` 
 
-##Now begin labelling (BETA, so go slow and save into multiple csvs that we can coallesce later if necessary)
+## Now begin labelling (BETA, so go slow and save into multiple csvs that we can coallesce later if necessary)
 
 Run:
 
