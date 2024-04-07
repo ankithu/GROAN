@@ -1,5 +1,6 @@
 import mailbox
 import pandas as pd
+import uuid
 
 def decode_payload(payload):
     try:
@@ -51,7 +52,8 @@ def get_row_from_message(message):
             category = label.split(' ')[1]
             break
     text_content = get_email_content(message)
-    return {'subject': subject, 'from': sender, 'to': recipient,'date': date, 'labels': labels, 'text': text_content, 'spam': spam, 'gmail_category': category, 'labeled': False}
+    message_id = str(uuid.uuid4())
+    return {'message_id': message_id, 'subject': subject, 'from': sender, 'to': recipient,'date': date, 'labels': labels, 'text': text_content, 'spam': spam, 'gmail_category': category, 'labeled': False}
 
 
 def mbox_to_dataframe_generator(mbox_path, batch_size=100):
@@ -70,7 +72,7 @@ def mbox_to_dataframe_generator(mbox_path, batch_size=100):
 
 def process_mbox_to_csv(mbox_path, csv_path):
     first_batch = True
-    for df_batch in mbox_to_dataframe_generator(mbox_path, batch_size=1000):
+    for df_batch in mbox_to_dataframe_generator(mbox_path, batch_size=20000):
         # Write the first batch with headers, then append without headers
         df_batch.to_csv(csv_path, mode='a', index=False, header=first_batch)
         first_batch = False
