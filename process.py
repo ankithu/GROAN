@@ -79,5 +79,5 @@ def process_mbox_to_csv(mbox_path, csv_path):
 
 
 mbox_path = 'Mail/mail.mbox'
-csv_path = 'mail.csv'
+csv_path = 'mail_ankith.csv'
 process_mbox_to_csv(mbox_path, csv_path)

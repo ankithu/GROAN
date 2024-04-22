@@ -10,30 +10,52 @@ def convertable_to_int(s):
     except ValueError:
         return False
 
-def label_by_sender(df: pd.DataFrame, input_df_path: str, categories: List[str], tgt_df_ref: Optional[pd.DataFrame]) -> pd.DataFrame:
+def label_by_sender(df: pd.DataFrame, input_df_path: str, categories: List[str], tgt_df_ref: Optional[pd.DataFrame], max_freq: Optional[int]) -> pd.DataFrame:
     #find senders already labeled in the target dataframe (if any one email from a sender is labeled, you won't be able to label it through --by_sender
     #since that would cause potential inconsistencies. So if you label any one email from a sender manually, you need to do the same for all senders from that domain)
     
     #get all the unlabled emails from the dataset
-    unlabeled_df = df[df['labeled'] == False]
+    unlabeled_df = df#[df['labeled'] == False]
     
     labeled_sender_emails = []
     if tgt_df_ref is not None:
-        labeled_sender_emails = tgt_df_ref['from'].str.extract(r'<(.*?)>').value_counts().index
+        labeled_sender_emails = tgt_df_ref['from'].str.extract(r'<(.*?)>').value_counts()
+    
+    
     
     #sort all senders by frequency
     sender_emails = unlabeled_df['from'].str.extract(r'<(.*?)>')
     sender_frequency = sender_emails.value_counts()
     orig_df_cols = unlabeled_df.columns
     output_df = pd.DataFrame(columns=orig_df_cols)
+    print(labeled_sender_emails['eecs-comm@umich.edu'], sender_frequency['eecs-comm@umich.edu'])
     for sender in sender_frequency.index:
         #if this sender is already labeled, skip it
-        if sender in labeled_sender_emails:
+        if max_freq is not None and sender_frequency[sender] > max_freq:
             continue
+        relabeling = False
+        if sender in labeled_sender_emails.index:
+            # if 'no-reply@piazza.com' in sender:
+            #     print("forcing to label piazza, even though it is already labeled partially")
+            # elif 'no-reply@gradescope.com' in sender:
+            #     print("forcing to label ankithu, even though it is already labeled partially")
+            # elif 'notifications@instructure.com' in sender:
+            #     print("forcing to label canvas, even though it is already labeled partially")
+            # if 'coe-studentaffairs@umich.edu' in sender:
+            #     print("forcing to label coe-studentaffairs, even though it is already labeled partially")
+            # if 'akamil@umich.edu' in sender:
+            #     print("forcing to label akamil, even though it is already labeled partially")
+            if labeled_sender_emails[sender] != sender_frequency[sender]:
+                relabeling = True
+                print(f"RELABELING {sender} with {labeled_sender_emails[sender]} labeled emails and {sender_frequency[sender]} total emails")
+            else:
+                continue
         #some spacing
         print('\n\n')
         print('-----------------------------------')
         print(f"SENDER DOMAIN: {sender}, Frequency: {sender_frequency[sender]}")
+        if relabeling:
+            print("(RELABELING)")
         sender = sender[0]
         #figure out distribution of 'gmail_category' for this sender
         sender_df = unlabeled_df[unlabeled_df['from'].str.contains(sender, case=False, regex=False)]
@@ -160,12 +182,15 @@ def main():
     #parser.add_argument('uniqname', type=str, help='Uniqname of the person running this script')
     parser.add_argument('--by_sender', action='store_true', help='Group by sender')
     parser.add_argument('--append', action='store_true', help='Append to output file instead of overwriting')
+    #optional argument for maximum frequency per sender to label
+    parser.add_argument('--max_freq', type=int, help='Maximum frequency per sender to label')
     args = parser.parse_args()
     print(args.dataset_path)
     print(args.output_path)
     print(args.by_sender)
     print(args.append)
     print(args.category_file)
+    print(args.max_freq)
     #print(args.uniqname)
 
     #get the categories
@@ -184,11 +209,11 @@ def main():
             return 1
     
     #read the dataset
-    df = pd.read_csv(args.dataset_path)
+    df = pd.read_csv(args.dataset_path, low_memory=False)
 
 
     if args.by_sender:
-        out = label_by_sender(df, args.dataset_path, categories, pd.read_csv(args.output_path) if args.append else None)
+        out = label_by_sender(df, args.dataset_path, categories, pd.read_csv(args.output_path) if args.append else None, args.max_freq)
         out.to_csv(args.output_path, mode='a' if args.append else 'w', index=False)
     else:
         label_by_message(df, args.dataset_path, categories).to_csv(args.output_path, mode='a' if args.append else 'w', index=False)
