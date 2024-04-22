@@ -56,17 +56,26 @@ def label_by_sender(df: pd.DataFrame, input_df_path: str, categories: List[str],
         print(f"SENDER DOMAIN: {sender}, Frequency: {sender_frequency[sender]}")
         if relabeling:
             print("(RELABELING)")
-        sender = sender[0]
-        #figure out distribution of 'gmail_category' for this sender
-        sender_df = unlabeled_df[unlabeled_df['from'].str.contains(sender, case=False, regex=False)]
-        gmail_category_distribution = sender_df['gmail_category'].value_counts()
-        sender_distribution = sender_df['from'].value_counts()
-        print("GMAIL generated category distribution: ")
-        print(gmail_category_distribution)
+
         #start with printig top 5 full senders
         category = "MS:5"
 
-        first = True
+        sender = sender[0]
+        #figure out distribution of 'gmail_category' for this sender
+        sender_df = unlabeled_df[unlabeled_df['from'].str.contains(sender, case=False, regex=False)]
+
+        gmail_category_distribution = sender_df['gmail_category'].value_counts()
+        sender_distribution = sender_df['from'].value_counts()
+
+        if category == 'MS:5':     
+            print("GMAIL generated category distribution: ")
+            print(gmail_category_distribution)
+
+        #get subjects of first 3 emails
+        print("Subjects of first 3 emails: ")
+        print(sender_df['subject'].head(3))
+
+        first = category == 'MS:5'
 
         #if user wants to see more senders, show more senders until they are satisfied
         while first or not (category == 'S' or category == 'Q' or convertable_to_int(category)):
