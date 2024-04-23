@@ -6,6 +6,8 @@ import pandas as pd
 mail_csv = 'mail.csv'
 output_csv = 'test_out1.csv'
 
+
+
 mail_df = pd.read_csv('mail.csv', low_memory=False)
 
 no_sender_df = mail_df[mail_df['from'].isnull()]
@@ -21,6 +23,8 @@ print(f"Number of labeled senders: {len(output_df['from'].unique())}")
 print(f"Number of labeled emails: {len(output_df)}")
 print(f"Total number of emails: {len(mail_df)}")
 print(f"Number of emails to label: {len(mail_df) - len(output_df)}")
+
+print(f"Columns in output_df: {output_df.columns}")
 
 #generate a map of 'from' to frequency of 'from' in mail_df
 from_map = mail_df['from'].str.extract(r'<(.*?)>').value_counts().to_dict()
