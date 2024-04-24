@@ -2,3 +2,6 @@ Mail/*
 env/*
 .DS_STORE
 *.csv
+__pycache__/*
+__pycache__
+*.pyc
