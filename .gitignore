@@ -5,3 +5,6 @@ env/*
 __pycache__/*
 __pycache__
 *.pyc
+secret_token.py
+model_params/*
+test_trainer/*

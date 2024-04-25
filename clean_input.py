@@ -6,9 +6,9 @@ from typing import List
 from user import User
 import argparse
 import pandas as pd
-import re
 from bs4 import BeautifulSoup
 import html
+from clean_utils import clean_text_col, get_output_text_col, clean_subject_col
 
 class Cleaner:
     def __init__(self, categories: List[str], inbox_user: User):
@@ -53,57 +53,41 @@ class Cleaner:
         #remove all rows that contain None value in the 'from', 'to', 'date' columns
         df = df.dropna(subset=['from', 'to', 'date'])
         #replace all None values in the 'subject', 'text' columns with "<EMPTY>" token
-        df['subject'] = df['subject'].fillna("<EMPTY>")
-        df['text'] = df['text'].fillna("<EMPTY>")
         #turn all text, subjects, from, and to lowercase
-        df['text'] = df['text'].str.lower()
-        df['subject'] = df['subject'].str.lower()
+
+        df = clean_text_col(df, self.inbox_user)
+        df = clean_subject_col(df, self.inbox_user)
+
         df['from'] = df['from'].str.lower()
         df['to'] = df['to'].str.lower()
+ 
+        df['gmail_category'] = df['gmail_category'].fillna("<EMPTY>")
 
         #replace all instances of ways to address the inbox user with "<USER>" token
         for name in self.inbox_user.get_names():
-            df['text'] = df['text'].str.replace(name, "<USER>")
-            df['subject'] = df['subject'].str.replace(name, "<USER>")
             df['from'] = df['from'].str.replace(name, "<USER>")
             df['to'] = df['to'].str.replace(name, "<USER>")
 
         #for the from column, seperate email and name into two columns, from_email and from_name
         df['from_email'] = df['from'].str.extract(r'<(.*?)>')
+        df['from_email'] = df['from_email'].fillna("<EMPTY>")
         df['from_name'] = df['from'].str.split('<').str[0]
 
         #for the from_name column, remove any leading or trailing whitespace, and non-alphanumeric characters (except for spaces)
         df['from_name'] = df['from_name'].str.replace('[^a-zA-Z0-9 ]', '', regex=True)
         df['from_name'] = df['from_name'].str.strip()
-
-        df['text'] = df['text'].apply(self.preprocess_html_email)
-        df['text'] = df['text'].str.replace(r'^>.*$', '<QUOTED_TEXT>', regex=True, flags=re.M)
-        #in the text column, replace all instances of [image: ...] with "<IMAGE>"
-        df['text'] = df['text'].str.replace(r'\[image:.*?\]', '<IMAGE>', regex=True)
-        #replace all instances of [cid: ...] with "<IMAGE>"
-        df['text'] = df['text'].str.replace(r'\[cid:.*?\]', '<IMAGE>', regex=True)
-        #replace all instances of <http...> with "<LINK>"
-        df['text'] = df['text'].str.replace(r'<http.*?>', '<LINK>', regex=True)
-        df['text'] = df['text'].str.replace(r'\(http.*?\)', '<LINK>', regex=True)
-        df['text'] = df['text'].str.replace(r'\[http.*?\]', '<LINK>', regex=True)
-        #replace all words that start with http with "<LINK>"
-        df['text'] = df['text'].str.replace(r'\bhttps?://\S+', '<LINK>', regex=True)
-
-        #repalce mailto:..com|edu|org|co with <EMAIL>
-        df['text'] = df['text'].str.replace(r'mailto:.*?\.(com|edu|org|co)', '<EMAIL>', regex=True)
-        #remove all &nbsp; and &zwnj; characters with a space
-        df['text'] = df['text'].str.replace(r'&nbsp;', ' ', regex=True)
-        df['text'] = df['text'].str.replace(r'&zwnj;', ' ', regex=True)
-        #make sure that all text is on a single line
-        df['text'] = df['text'].str.replace(r'\n', ' ', regex=True)
-        for email in df['text'][100:105]:
-            print(email)
-        return df
+        #create output df with only two columns, 'text' and 'label', text will have all relevant columns concatenated, seperated by SEP tokens
+        output_df = pd.DataFrame()
+        output_df['text'] = get_output_text_col(df)
+        #the label column should be index of the category in the categories list
+        output_df['label'] = df['category'].apply(lambda x: self.categories.index(x))
+        return output_df
         
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('input_path', type=str, help='Input csv file')
     parser.add_argument('category_path', type=str, help='File containing the categories')
+    parser.add_argument('user', type=str, help='User name (either "haider" or "ankith")')
     parser.add_argument('output_path', type=str, help='Output csv file')
     args = parser.parse_args()
     df = pd.read_csv(args.input_path)
@@ -111,7 +95,12 @@ def main():
         categories = f.readlines()
     categories = [category.strip() for category in categories]
     ankith_user = User('Ankith', 'Udupa', 'ankithu', 'umich.edu', 'Mr.')
-    cleaner = Cleaner(categories, ankith_user)
+    haider_user = User('Haider', 'Baloch', 'hbaloch', 'umich.edu', 'Mr.')
+    if args.user.lower() == 'haider':
+        user = haider_user
+    else:
+        user = ankith_user
+    cleaner = Cleaner(categories, user)
     cleaned_df = cleaner(df)
     cleaned_df.to_csv(args.output_path, index=False)
 
