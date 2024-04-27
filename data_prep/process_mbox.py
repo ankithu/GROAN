@@ -77,7 +77,11 @@ def process_mbox_to_csv(mbox_path, csv_path):
         df_batch.to_csv(csv_path, mode='a', index=False, header=first_batch)
         first_batch = False
 
-
-mbox_path = 'Mail/mail.mbox'
-csv_path = 'mail_ankith.csv'
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('mbox_path', type=str, help='Path to the mbox file')
+parser.add_argument('csv_path', type=str, help='Path to the output CSV file')
+args = parser.parse_args()
+mbox_path = args.mbox_path
+csv_path = args.csv_path
 process_mbox_to_csv(mbox_path, csv_path)

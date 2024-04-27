@@ -7,6 +7,7 @@ print(style.available)
 style.use('seaborn-v0_8-paper') #sets the size of the charts
 style.use('ggplot')
 
+#copied and pasted from terminal results on models/classifier/base_line_model.py
 comp_random_micro_f1 =  0.12494056738338
 comp_random_f1 = [0.19822829885916515,0.14753397726301393,0.07332213539764844,0.04595669465311533,0.09350486350800126,0.12657413857778255,0.038100301258195995,0.04720624839069608]
 
