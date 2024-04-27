@@ -42,10 +42,14 @@ def main():
     data_categories = np.random.choice(len(categories), len(df), p=correct_distribution)
 
     accuracy = accuracy_score(data_categories, predictions)
-    f1 = f1_score(data_categories, predictions, average='weighted')
+    f1 = f1_score(data_categories, predictions, average=None)
+    f1_micro = f1_score(data_categories, predictions, average='micro')
 
     print(f'Accuracy: {accuracy}')
-    print(f'F1: {f1}')
+    print(f'F1 Micro: {f1_micro}')
+    f1s = f1.tolist()
+    f1s = [str(f1) for f1 in f1s]
+    print(f'F1: [{','.join(f1s)}]')
 
 if __name__ == '__main__':
     main()
