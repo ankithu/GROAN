@@ -84,8 +84,6 @@ def train(input_csv: str, checkpoint: str = None):
         return {k: round(v, 4) for k, v in result.items()}
     
     data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
-    train_dataset = train_dataset.remove_columns(dataset["train"].column_names)
-    eval_dataset = eval_dataset.remove_columns(dataset["test"].column_names)
     
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     model.to(device)
