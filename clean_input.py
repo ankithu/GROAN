@@ -37,7 +37,7 @@ class Cleaner:
             # Return non-HTML content as is or apply other preprocessing
             return html_content
 
-    def __call__(self, df: pd.DataFrame):
+    def __call__(self, df: pd.DataFrame, do_summarization):
         '''
         This method will take in a df and clean it. It will return the cleaned df.
 
@@ -78,9 +78,13 @@ class Cleaner:
         df['from_name'] = df['from_name'].str.strip()
         #create output df with only two columns, 'text' and 'label', text will have all relevant columns concatenated, seperated by SEP tokens
         output_df = pd.DataFrame()
-        output_df['text'] = get_output_text_col(df)
+        
+        if not do_summarization:
+            output_df['label'] = df['category'].apply(lambda x: self.categories.index(x))
+        else:
+            output_df['subject'] = df['subject']
+        output_df['text'] = get_output_text_col(df, do_summarization)
         #the label column should be index of the category in the categories list
-        output_df['label'] = df['category'].apply(lambda x: self.categories.index(x))
         return output_df
         
 def main():
@@ -89,7 +93,10 @@ def main():
     parser.add_argument('category_path', type=str, help='File containing the categories')
     parser.add_argument('user', type=str, help='User name (either "haider" or "ankith")')
     parser.add_argument('output_path', type=str, help='Output csv file')
+    parser.add_argument('--summarization', action="store_true", help="Set the value to True if this argument is called")
+
     args = parser.parse_args()
+    do_summarization = args.summarization
     df = pd.read_csv(args.input_path)
     with open(args.category_path, 'r') as f:
         categories = f.readlines()
@@ -101,7 +108,7 @@ def main():
     else:
         user = ankith_user
     cleaner = Cleaner(categories, user)
-    cleaned_df = cleaner(df)
+    cleaned_df = cleaner(df, do_summarization=do_summarization)
     cleaned_df.to_csv(args.output_path, index=False)
 
 

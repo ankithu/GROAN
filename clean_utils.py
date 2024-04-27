@@ -68,6 +68,9 @@ def clean_subject_col(df: pd.DataFrame, user: Optional[User] = None) -> pd.DataF
             df['subject'] = df['subject'].str.replace(name, "[USER]")
     return df
 
-def get_output_text_col(df: pd.DataFrame):
-    return df['subject'] + ' [SEP] ' + df['text'] + ' [SEP] ' + df['from_name'] + ' [SEP] ' + df['from_email'] + ' [SEP] ' + df['to'] + ' [SEP] ' + df['gmail_category'] + ' [SEP] ' + df['spam'].astype(str)
+def get_output_text_col(df: pd.DataFrame, forSummarization):
+    if not forSummarization:
+        return df['subject'] + ' [SEP] ' + df['text'] + ' [SEP] ' + df['from_name'] + ' [SEP] ' + df['from_email'] + ' [SEP] ' + df['to'] + ' [SEP] ' + df['gmail_category'] + ' [SEP] ' + df['spam'].astype(str)
+    else:
+        return df['text'] + ' [SEP] ' + df['from_name'] + ' [SEP] ' + df['from_email'] + ' [SEP] ' + df['to'] + ' [SEP] ' + df['gmail_category'] + ' [SEP] ' + df['spam'].astype(str)
 
