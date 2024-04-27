@@ -2,13 +2,20 @@
 Checks the users progress on how many emails in mail.csv are labeled.
 '''
 import pandas as pd
+import argparse
 
-mail_csv = 'mail.csv'
-output_csv = 'test_out1.csv'
+parser = argparse.ArgumentParser()
+
+parser.add_argument('mail_csv', type=str, help='Input csv file containing email data')
+parser.add_argument('output_csv', type=str, help='Output csv file containing labeled email data')
+args = parser.parse_args()
+
+mail_csv = args.mail_csv
+output_csv = args.output_csv
 
 
 
-mail_df = pd.read_csv('mail.csv', low_memory=False)
+mail_df = pd.read_csv(mail_csv, low_memory=False)
 
 no_sender_df = mail_df[mail_df['from'].isnull()]
 
@@ -16,7 +23,7 @@ print(f"Number of emails with no sender: {len(no_sender_df)}")
 print(f"Number of senders: {len(mail_df['from'].unique())}")
 
 
-output_df = pd.read_csv('test_out1.csv')
+output_df = pd.read_csv(output_csv, low_memory=False)
 
 print(f"Number of labeled senders: {len(output_df['from'].unique())}")
 

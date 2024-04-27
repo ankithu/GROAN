@@ -1,3 +1,40 @@
+# GROAN
+
+Getting Rid of Annoying Notifications
+
+EECS 595 Final Project
+
+Core components for classifying and summarizing emails, in pursuit of a smarter email management system.
+
+Note:
+If attempting to run the model, you will unfortunately have to train it yourself on your own data (requiring labeling) as we don't have a secure/ethical way to publish our private email data and the model parameters are too big to host on github right now without LFS (future plan). Contact ankithu@umich.edu or hbaloch@umich.edu with any questions.
+
+# Repo Structure
+
+## data_prep/
+
+Data preparation pipeline. All scripts to label training data and clean it.
+
+Pipeline:
+
+1. process_mbox.py to generate csv from mbox
+2. build_dataset.py to label (described in more detail below)
+3. clean_emails.py to clean labeled emails
+4. clean_spam.py to clean additional spam csv
+5. combine_csvs.py to combine cleaned csvs to form dataset
+6. undersample.py to undersample based on minimum frequency label
+
+## models/
+
+### models/classifier
+
+All code/notebooks for classifer training + inference
+
+### models/summarizer
+
+All code/notebooks for summarizer training + inference
+
+
 # How to generate training data
 
 ## Get email data
@@ -13,16 +50,10 @@ Run `source env/bin/activate` to activate it
 
 Then run `pip install -r requirements.txt` to get all required dependencies in the env
 
-## Now generate your preliminary csv file
-
-Go into process.py and scroll to the bottom.
-There are two variables, mbox_path and csv_path. mbox_path is the path to your
-mbox file, and csv path is the path to your output csv file. Change them to be correct for your usecase.
-
-TODO change these to program args. 
+## Now generate your preliminary csv file 
 
 Run:
-`python3 process.py` 
+`python3 process_mbox.py <MAILBOX FILE> <OUTPUT CSV>` 
 
 ## Now begin labelling (BETA, so go slow and save into multiple csvs that we can coallesce later if necessary)
 
@@ -62,4 +93,6 @@ DO NOT COMMIT YOUR GENERATED CSV FILE TO THE REPO, SEND IT SOME OTHER WAY
 
 WHEN LABELLING, PLEASE ASK BEFORE ADDING A CATEGORY AND TRY TO AVOID REMOVING OR CHANGING THE NAMES OF ANY
 
+To check your progress run:
 
+`python3 progress_tracker.py <input_csv> <output_csv>`
